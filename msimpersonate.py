@@ -28,7 +28,7 @@ def CreateProcessWithLogonW(Username, Domain, Password, LogonFlags, ApplicationN
     proc_info = PROCINFO()
     valid = windll.advapi32.CreateProcessWithLogonW(Username, Domain, Password, LogonFlags, ApplicationName, CommandLine, CreationFlags, Environment, CurrentDirectory, startupInfo, byref(proc_info))
     if not valid:
-        print('[-] CreateProcessWithLogonW failed with error code: ' + str(windll.kernel32.GetLastError()))
+        print('[!] CreateProcessWithLogonW failed with error code: ' + str(windll.kernel32.GetLastError()))
         time.sleep(1)
         print('[!] Attempting authentication with netlogon.')
         print('[!] This will spawn a new process, but based on how netlogon works, it may not be valid.')
@@ -60,6 +60,10 @@ if __name__ == '__main__':
     time.sleep(sleepy_time)
     '''Here we call the CreateProcessWithLogonW function with the arguments and credentials to create a new process with the impersonated token.'''
     proc = CreateProcessWithLogonW(user_name, domain, password, 0, None, command, HIGH_PRIORITY_CLASS, None, "C:\\", None)
+    print("[+] Process created with PID: %d" % proc.ProcessId)
+    print("[+] Thread created with TID: %d" % proc.ThreadId)
+    print("[+] Closing process handle")
     close_proc = windll.kernel32.CloseHandle(proc.Process)
+    print("[+] Closing thread handle")
     close_hand = windll.kernel32.CloseHandle(proc.Thread)
     print("[+] Done")
