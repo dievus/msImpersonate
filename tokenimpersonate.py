@@ -2,6 +2,7 @@
 
 from ctypes import Structure, byref, windll
 from ctypes.wintypes import HANDLE, DWORD, LPWSTR, WORD, BYTE
+from subprocess import HIGH_PRIORITY_CLASS
 import sys
 import time
 
@@ -13,7 +14,7 @@ class PROCINFO(Structure):
     _fields_ = [('Process', HANDLE), ('Thread', HANDLE), ('ProcessId', DWORD), ('ThreadId', DWORD)]
 
 #  https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfow
-'''Here the STARTUPINFOW structure which defines the window station, desktop, handles and appearance. None of these are utilized in the tool,
+'''STARTUPINFOW structure defines the window station, desktop, handles and appearance. None of these are utilized in the tool,
 but are required for functionality.'''
 class STARTINFOW(Structure):
     _fields_ = [('cb', DWORD), ('Reserved', LPWSTR), ('Desktop', LPWSTR), ('Title', LPWSTR), ('X', DWORD), ('Y', DWORD), ('XSize', DWORD), ('YSize', DWORD), ('XCountChars', DWORD), ('YCountChars', DWORD), ('FillAttribute', DWORD), ('Flags', DWORD), ('ShowWindow', WORD), ('Reserved2', WORD), ('Reserved2', BYTE), ('StdInput', HANDLE), ('StdOutput', HANDLE), ('StdError', HANDLE)]
@@ -27,22 +28,38 @@ def CreateProcessWithLogonW(Username, Domain, Password, LogonFlags, ApplicationN
     proc_info = PROCINFO()
     valid = windll.advapi32.CreateProcessWithLogonW(Username, Domain, Password, LogonFlags, ApplicationName, CommandLine, CreationFlags, Environment, CurrentDirectory, startupInfo, byref(proc_info))
     if not valid:
-        print('[!] Check the arguments and credentials and try again.\n')
+        print('[!] CreateProcessWithLogonW failed with error code: ' + str(windll.kernel32.GetLastError()))
+        time.sleep(1)
+        print('[!] Attempting authentication with netlogon.')
+        print('[!] This will spawn a new process, but based on how netlogon works, it may not be valid.')
+        sleepy_time = random.randint(1, 10)
+        print('[!] Sleeping for {} seconds'.format(sleepy_time))
+        time.sleep(sleepy_time)
+        valid = windll.advapi32.CreateProcessWithLogonW(Username, Domain, Password, 2, ApplicationName, CommandLine, CreationFlags, Environment, CurrentDirectory, startupInfo, byref(proc_info))
+        print('''[!] Netlogon created the new process. Test it to make sure it's a valid session.''')
+    else:
         sys.exit(1)
     return proc_info
+def banner():  
+    print('█▀▄▀█ █▀ ▄▄ █ █▀▄▀█ █▀█ █▀▀ █▀█ █▀ █▀█ █▄░█ ▄▀█ ▀█▀ █▀▀\n'
+          '█░▀░█ ▄█    █ █░▀░█ █▀▀ ██▄ █▀▄ ▄█ █▄█ █░▀█ █▀█ ░█░ ██▄ A project by The Mayor\n')
 
 if __name__ == '__main__':
+    banner()
     try:
         user_name = sys.argv[1]
         domain = sys.argv[2]
         password = sys.argv[3]
         command = sys.argv[4]
     except Exception:
-        print("[!] USAGE: tokenimpersonate.py <username> <domain> <password> <command>\n")
+        print("[!] USAGE: msimpersonate.py <username> <domain> <password> <command>\n")
         sys.exit()
-    time.sleep(5)
+    import random
+    sleepy_time = random.randint(1, 10)
+    print('[+] Sleeping for {} seconds...'.format(sleepy_time))
+    time.sleep(sleepy_time)
     '''Here we call the CreateProcessWithLogonW function with the arguments and credentials to create a new process with the impersonated token.'''
-    proc = CreateProcessWithLogonW(user_name, domain, password, 0, None, command, 0, None, "C:\\", None)
+    proc = CreateProcessWithLogonW(user_name, domain, password, 0, None, command, HIGH_PRIORITY_CLASS, None, "C:\\", None)
     print("[+] Process created with PID: %d" % proc.ProcessId)
     print("[+] Thread created with TID: %d" % proc.ThreadId)
     print("[+] Closing process handle")
