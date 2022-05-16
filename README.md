@@ -27,3 +27,6 @@ Note that the netlogon parameter cannot differentiate between valid and invalid 
 ##### Note that domain can be blank if authenticating locally using the following:
 
 ```python3 msimpersonate.py <username> ' ' <password> <command to run>```
+
+##### Notes
+Here is your obligatory don't do anything stupid with my tool. If you do it's your fault.
