@@ -6,7 +6,7 @@
   <img src="https://github.com/dievus/msimpersonate/blob/main/images/msimpersonate.jpg" />
 </p>
 
-msImpersonate is a Python-native user impersonation tool that is capable of impersonating local or network user accounts with valid credentials. The tool was built with internal penetration tests in mind, allowing for local authentication, or network and domain authentication from the tester's dropbox.  The tool utilizes Python's ctypes library to interact with the Windows operating system. together with the CreateProcessWithLogonW function, it is possible to spawn Command Prompts, Powershell, and other services as the target user. 
+msImpersonate is a Python-native user impersonation tool that is capable of impersonating local or network user accounts with valid credentials. The tool was built with internal penetration tests in mind, allowing for local authentication, or network and domain authentication from the tester's dropbox.  The tool utilizes Python's ctypes library to interact with the Windows operating system. Together with the CreateProcessWithLogonW function, it is possible to spawn Command Prompts, Powershell, and other services as the target user. 
 
 msImpersonate will first attempt to authenticate on the local machine. If this is not successful, the tool will attempt to authenticate using netlogon from the CreateProcessWithLogonW function. I may or may not re-add functionality that allows the tester to determine whether to attempt local or network authentication. 
 
