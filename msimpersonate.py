@@ -27,7 +27,9 @@ def CreateProcessWithLogonW(Username, Domain, Password, LogonFlags, ApplicationN
     startupInfo = STARTINFOW()
     proc_info = PROCINFO()
     valid = windll.advapi32.CreateProcessWithLogonW(Username, Domain, Password, LogonFlags, ApplicationName, CommandLine, CreationFlags, Environment, CurrentDirectory, startupInfo, byref(proc_info))
-    if not valid:
+    if valid:
+        return proc_info    
+    elif not valid:
         print('[!] CreateProcessWithLogonW failed with error code: ' + str(windll.kernel32.GetLastError()))
         time.sleep(1)
         print('[!] Attempting authentication with netlogon.')
@@ -37,9 +39,11 @@ def CreateProcessWithLogonW(Username, Domain, Password, LogonFlags, ApplicationN
         time.sleep(sleepy_time)
         valid = windll.advapi32.CreateProcessWithLogonW(Username, Domain, Password, 2, ApplicationName, CommandLine, CreationFlags, Environment, CurrentDirectory, startupInfo, byref(proc_info))
         print('''[!] Netlogon created the new process. Test it to make sure it's a valid session.''')
+        return proc_info
     else:
         sys.exit(1)
-    return proc_info
+        
+
 def banner():  
     print('█▀▄▀█ █▀ ▄▄ █ █▀▄▀█ █▀█ █▀▀ █▀█ █▀ █▀█ █▄░█ ▄▀█ ▀█▀ █▀▀\n'
           '█░▀░█ ▄█    █ █░▀░█ █▀▀ ██▄ █▀▄ ▄█ █▄█ █░▀█ █▀█ ░█░ ██▄ A project by The Mayor\n')
@@ -59,7 +63,7 @@ if __name__ == '__main__':
     print('[+] Sleeping for {} seconds...'.format(sleepy_time))
     time.sleep(sleepy_time)
     '''Here we call the CreateProcessWithLogonW function with the arguments and credentials to create a new process with the impersonated token.'''
-    proc = CreateProcessWithLogonW(user_name, domain, password, 0, None, command, HIGH_PRIORITY_CLASS, None, "C:\\", None)
+    proc = CreateProcessWithLogonW(user_name, domain, password, None, None, command, HIGH_PRIORITY_CLASS, None, "C:\\", None)
     print("[+] Process created with PID: %d" % proc.ProcessId)
     print("[+] Thread created with TID: %d" % proc.ThreadId)
     print("[+] Closing process handle")
