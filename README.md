@@ -18,9 +18,6 @@ Note that the netlogon parameter cannot differentiate between valid and invalid 
 ##### Installing msImpersonate
 ```Download the ZIP file from the repository and extract the contents where desired.```
 
-##### Change directories to msImpersonate via command prompt and run:
-```pip3 install -r requirements.txt```
-
 ##### Execute an impersonation attack
 ```python3 msimpersonate.py <username> <domain> <password> <command to run>```
 
